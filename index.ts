@@ -3,6 +3,7 @@ import P5 from "p5";
 import { Cheese } from './Cheese'
 import { Wall } from './Wall'
 import { Actor, Pacman, Ghost } from './Actor'
+import { WorldBlock } from './WorldBlock'
 
 enum Direction {
     Up = 1,
@@ -10,42 +11,6 @@ enum Direction {
     Left,
     Right,
 }
-
-class WorldBlock {
-  constructor(private cheese: Cheese, private wall: Wall,
-    private p5: P5) {
-  }
-
-  setWall(wall: Wall) {
-    this.wall = wall;
-  }
-
-  createCheese() {
-    if (this.wall == null) {
-      this.cheese = new Cheese();
-    }
-  }
-
-  isMovable() {
-    return this.wall == null;
-  }
-
-  draw(x: number, y: number) {
-    if (this.wall != null) {
-      this.p5.noStroke();
-      this.p5.fill(0, 0, 0);
-      this.p5.rect(x, y,1,1);
-    }
-
-    if (this.cheese != null) {
-      this.p5.noStroke();
-      this.p5.fill(252, 190, 3);
-      this.p5.circle(x + 0.5, y + 0.5,
-        0.3, 0.3);
-    }
-  }
-}
-
 
 new P5((p5: P5) => {
   let w: number = 800;
@@ -55,7 +20,7 @@ new P5((p5: P5) => {
   let widhtBlocks = 25
   let widthScale = w / widhtBlocks;
 
-  let frameRate: number = 30;
+  let frameRate: number = 15;
   let world = [];
 
   let player: Pacman;
@@ -125,35 +90,48 @@ new P5((p5: P5) => {
     player = new Pacman(p5.createVector(12,13));
   }
 
-  function moveIfPossibleInDirection(actor: Actor, dir: Direction) {
+  function moveIfPossibleInDirection(actor: Actor) {
     let x: number = actor.getPos().x;
     let y: number = actor.getPos().y;
+
     switch (actor.keyPressed(p5)) {
       case Direction.Down: {
         if (world[y + 1][x].isMovable()) {
-          player.setPos(x, y + 1);
+          y += 1;
         }
         break;
       }
       case Direction.Left: {
         if (world[y][x - 1].isMovable()) {
-          player.setPos(x - 1, y);
+          x -= 1;
         }
         break;
       }
       case Direction.Right: {
         if (world[y][x + 1].isMovable()) {
-          player.setPos(x + 1, y);
+          x += 1;
         }
         break;
       }
       case Direction.Up: {
         if (world[y - 1][x].isMovable()) {
-          player.setPos(x, y - 1);
+          y -= 1;
         }
         break;
       }
     }
+    actor.setPos(x, y);
+    actor.removeOnTouch(world[y][x]);
+  }
+
+  function gameIsDone() {
+    let cheeseCount: number = 0;
+    for (let y: number = 0; y < world.length; y++) {
+      for (let x: number = 0; x < world[y].length; x++) {
+        cheeseCount += world[y][x].hasCheese() ? 1 : 0;
+      }
+    }
+    return cheeseCount == 0;
   }
 
   p5.draw = () => {
@@ -165,11 +143,17 @@ new P5((p5: P5) => {
       }
     }
 
+    moveIfPossibleInDirection(player);
+
     //Draw Pacman
     p5.noStroke();
     p5.fill(150);
     p5.rect(player.getPos().x, player.getPos().y,1,1);
 
+    if (gameIsDone()) {
+      p5.noLoop();
+      console.log("Done")
+    }
   };
 });
 
