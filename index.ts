@@ -44,6 +44,7 @@ new P5((p5: P5) => {
     createWalls();
     createCheese();
     createPacman();
+    createGhosts();
   }
 
   function createWalls() {
@@ -88,6 +89,14 @@ new P5((p5: P5) => {
 
   function createPacman() {
     player = new Pacman(p5.createVector(12,13));
+  }
+
+  function createGhosts() {
+    ai = [ new Ghost(p5.createVector(1,1)), 
+           new Ghost(p5.createVector(22,1)),
+           new Ghost(p5.createVector(1,17)),
+           new Ghost(p5.createVector(22,17)) 
+        ]
   }
 
   function moveIfPossibleInDirection(actor: Actor) {
@@ -144,6 +153,17 @@ new P5((p5: P5) => {
     }
 
     moveIfPossibleInDirection(player);
+
+    for (let i = 0; i < ai.length; i++) {
+      moveIfPossibleInDirection(ai[i]);
+    }
+
+    //Draw ghosts
+    for (let i: number = 0; i < ai.length; i++) {
+      p5.noStroke();
+      p5.fill(150);
+      p5.rect(ai[i].getPos().x, ai[i].getPos().y,1,1);
+    }
 
     //Draw Pacman
     p5.noStroke();
