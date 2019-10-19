@@ -1,10 +1,10 @@
 import "./style.css";
 import P5 from "p5";
 //import WorldBlock from "./WorldBlock";
-import { Cheese } from './Cheese';
-import { Ghost } from './Ghost';
-import { Pacman } from './Pacman';
-import { Wall } from '.Wall'
+import { Cheese } from './Actor/Cheese';
+import { Ghost } from './Actor/Ghost';
+import { Pacman } from './Actor/Pacman';
+import { Wall } from './Wall'
 
 class WorldBlock {
   private cheese: Cheese; private ghost: Ghost; private pacman: Pacman; private wall: Wall;
