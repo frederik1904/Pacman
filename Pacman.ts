@@ -11,7 +11,7 @@ enum Direction {
 
 class Pacman extends Actor {
   constructor(pos: P5.vector) {
-    super(pos, "Pacman");
+    super(pos, "Pacman", 0);
   }
 
   keyPressed(p5) {

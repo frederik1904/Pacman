@@ -3,7 +3,7 @@ import P5 from "p5";
 import { Cheese } from './Cheese'
 import { Wall } from './Wall'
 import { Actor } from './Actor'
-import Pacman from './Pacman'
+import { Pacman } from './Pacman'
 import { Ghost } from './Ghost'
 import { WorldBlock } from './WorldBlock'
 
@@ -27,9 +27,13 @@ new P5((p5: P5) => {
 
   let actors: Actor[] = [];
 
+  let pacman; let ghost;
+
   p5.setup = () => {
     p5.pixelDensity(1);
     p5.createCanvas(w, h);
+    pacman = p5.loadImage('https://images.discordapp.net/avatars/398127484983443468/0bc43684999726e69c2ca797200ffffc.png?size=512')
+    ghost = p5.loadImage('https://image.flaticon.com/icons/png/128/696/696498.png');
     p5.frameRate(frameRate);
     createWorld();
   };
@@ -106,24 +110,28 @@ new P5((p5: P5) => {
     switch (actor.keyPressed(p5)) {
       case Direction.Down: {
         if (world[y + 1][x].isMovable()) {
+          actor.setRotation(Direction.Down);
           y += 1;
         }
         break;
       }
       case Direction.Left: {
         if (world[y][x - 1].isMovable()) {
+          actor.setRotation(Direction.Left);
           x -= 1;
         }
         break;
       }
       case Direction.Right: {
         if (world[y][x + 1].isMovable()) {
+          actor.setRotation(Direction.Right);
           x += 1;
         }
         break;
       }
       case Direction.Up: {
         if (world[y - 1][x].isMovable()) {
+          actor.setRotation(Direction.Up);
           y -= 1;
         }
         break;
@@ -160,12 +168,15 @@ new P5((p5: P5) => {
       }
     }
 
-    //Draw ghosts
+    //Draw actors
     for (let i: number = 0; i < actors.length; i++) {
       moveIfPossibleInDirection(actors[i]);
-      p5.noStroke();
-      p5.fill(150);
-      p5.rect(actors[i].getPos().x, actors[i].getPos().y,1,1);
+      if (actors[i].getType() == Pacman.name) {
+        p5.image(pacman, actors[i].getPos().x, actors[i].getPos().y, 1, 1);
+      } else if(actors[i].getType() == Ghost.name) {
+        p5.image(ghost, actors[i].getPos().x, actors[i].getPos().y, 1, 1);
+      }
+
     }
 
     if (gameIsDone()) {
