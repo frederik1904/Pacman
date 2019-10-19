@@ -28,18 +28,15 @@ new P5((p5: P5) => {
 
   let actors: Actor[] = [];
 
-  let pacmanl; let pacmanr; let pacmand; let pacmanu;
+  let pacman;
   let ghost;
 
   p5.setup = () => {
     p5.pixelDensity(1);
     p5.createCanvas(w, h);
 
-    pacmanr = p5.loadImage('./assets/pacmanr.png')
-    pacmanl = p5.loadImage('./assets/pacmanr.png')
-    pacmand = p5.loadImage('./assets/pacmanr.png')
-    pacmanu = p5.loadImage('./assets/pacmanr.png')
-    ghost = p5.loadImage('./assets/pacmanr.png')
+    pacman = p5.loadImage('https://i.gifer.com/origin/64/649852e53b7e4edf15ea1c2f23a61f29_w200.gif')
+    ghost = p5.loadImage('https://i.gifer.com/origin/50/5016760dd9f147e7a445529ed8ff40de_w200.gif')
 
     p5.frameRate(frameRate);
     createWorld();
@@ -178,26 +175,32 @@ new P5((p5: P5) => {
     //Draw actors
     for (let i: number = 0; i < actors.length; i++) {
       moveIfPossibleInDirection(actors[i]);
+       p5.push();
+        p5.translate(actors[i].getPos().x + 0.5, actors[i].getPos().y + 0.5)
+        p5.imageMode(p5.CENTER)
+        p5.angleMode(p5.DEGREES)
+        
       if (actors[i].getType() == Pacman.name) {
         switch (actors[i].getRotation()) {
           case Direction.Down:
-          p5.image(pacmand, actors[i].getPos().x, actors[i].getPos().y, 1, 1);
+          p5.rotate(90);
           break;
           case Direction.Up:
-          p5.image(pacmanu, actors[i].getPos().x, actors[i].getPos().y, 1, 1);
+          p5.rotate(270);
           break;
           case Direction.Left:
-          p5.image(pacmanl, actors[i].getPos().x, actors[i].getPos().y, 1, 1);
+          p5.rotate(180);
           break;
           case Direction.Right:
-          p5.image(pacmanr, actors[i].getPos().x, actors[i].getPos().y, 1, 1);
+          p5.rotate(0);
           break;
         }
-        
+        p5.image(pacman, 0, 0, 1, 1);
       } else if(actors[i].getType() == Ghost.name) {
-        p5.image(ghost, actors[i].getPos().x, actors[i].getPos().y, 1, 1);
-      }
 
+        p5.image(ghost, 0, 0, 1, 1);
+      }
+      p5.pop();
     }
 
     if (gameIsDone()) {
