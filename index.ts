@@ -14,6 +14,10 @@ enum Direction {
     Right,
 }
 
+export class node {
+  constructor(public x: number, public y: number, public connections: node[], public wall: boolean){}
+}
+
 new P5((p5: P5) => {
   let w: number = 800;
   let h: number = 600;
@@ -23,10 +27,11 @@ new P5((p5: P5) => {
   let widthScale = w / widhtBlocks;
   let heightScale = h / heightBlocks;
 
-  let frameRate: number = 15;
+  let frameRate: number = 10;
   let world = [];
 
   let actors: Actor[] = [];
+  let nodes: node[][] = [];
 
   let pacman;
   let ghost;
@@ -86,6 +91,30 @@ new P5((p5: P5) => {
         }
       }
     }
+
+    for (let y: number = 0; y < walls.length; y++) {
+      nodes[y] = [];
+      for (let x: number = 0; x < walls[y].length; x++) {
+          nodes[y][x] = new node(x, y, [], walls[y][x] == 1);
+      }
+    }
+
+    for (let y: number = 1; y < walls.length-1; y++) {
+      for (let x: number = 1; x < walls[y].length-1; x++) {
+        if (walls[y + 1][x] == 0) {
+          nodes[y][x].connections.push(nodes[y + 1][x])
+        }
+        if (walls[y - 1][x] == 0) {
+          nodes[y][x].connections.push(nodes[y - 1][x])
+        }
+        if (walls[y][x + 1] == 0) {
+          nodes[y][x].connections.push(nodes[y][x + 1])
+        }
+        if (walls[y][x - 1] == 0) {
+          nodes[y][x].connections.push(nodes[y][x - 1])
+        }
+      }
+    }
   }
 
   function createCheese() {
@@ -107,11 +136,20 @@ new P5((p5: P5) => {
     actors.push(new Ghost(p5.createVector(22,17)))
   }
 
+  function getPacman() {
+    for (let i: number = 0; i < actors.length; i++) {
+      if (actors[i].getType() == Pacman.name) {
+          return actors[i];
+        };
+      }
+      return null;
+  }
+
   function moveIfPossibleInDirection(actor: Actor) {
     let x: number = actor.getPos().x;
     let y: number = actor.getPos().y;
 
-    switch (actor.keyPressed(p5)) {
+    switch (actor.keyPressed(p5, nodes, getPacman())) {
       case Direction.Down: {
         if (world[y + 1][x].isMovable()) {
           actor.setRotation(Direction.Down);

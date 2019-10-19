@@ -1,6 +1,7 @@
 import P5 from "p5";
 import { WorldBlock } from "./WorldBlock";
 import { Actor } from "./Actor"
+import { node } from "./index"
 
 enum Direction {
     Up = 1,
@@ -14,7 +15,7 @@ class Pacman extends Actor {
     super(pos, "Pacman", 0);
   }
 
-  keyPressed(p5) {
+  keyPressed(p5: P5, world: node[][], pacman: Actor) {
     if (p5.keyIsDown(p5.LEFT_ARROW)) {
       return Direction.Left;
     }
