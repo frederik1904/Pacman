@@ -31,17 +31,15 @@ new P5((p5: P5) => {
   let pacmanl; let pacmanr; let pacmand; let pacmanu;
   let ghost;
 
-  p5.preload = () => {
-    pacmanr = p5.loadImage('https://therealflamingo.tk/api/pacmanr')
-    pacmanl = p5.loadImage('https://therealflamingo.tk/api/pacmanl')
-    pacmanu = p5.loadImage('https://therealflamingo.tk/api/pacmanu')
-    pacmand = p5.loadImage('https://therealflamingo.tk/api/pacmand')
-    ghost = p5.loadImage('https://therealflamingo.tk/api/ghost');
-  }
-
   p5.setup = () => {
     p5.pixelDensity(1);
     p5.createCanvas(w, h);
+
+    pacmanr = p5.loadImage('./assets/pacmanr.png')
+    pacmanl = p5.loadImage('./assets/pacmanr.png')
+    pacmand = p5.loadImage('./assets/pacmanr.png')
+    pacmanu = p5.loadImage('./assets/pacmanr.png')
+    ghost = p5.loadImage('./assets/pacmanr.png')
 
     p5.frameRate(frameRate);
     createWorld();
