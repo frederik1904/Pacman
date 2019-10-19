@@ -13,7 +13,7 @@ enum Direction {
 }
 
 class Actor {
-  constructor(private pos: P5.vector, private className: string, private rotation: number) {}
+  constructor(private pos: P5.vector, private className: string, private rotation: Direction) {}
 
   getPos() {
     return this.pos;
@@ -24,20 +24,7 @@ class Actor {
   }
 
   setRotation(dir: Direction) {
-    switch(dir) {
-      case Direction.Down:
-      this.rotation = 90;
-      break;
-      case Direction.Left:
-      this.rotation = 0;
-      break;
-      case Direction.Right:
-      this.rotation = 270;
-      break;
-      case Direction.Up:
-      this.rotation = 180;
-      break;
-    }
+    this.rotation = dir;
   }
 
   setPos(x: number, y: number) {

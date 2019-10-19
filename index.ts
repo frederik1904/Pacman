@@ -21,19 +21,28 @@ new P5((p5: P5) => {
   let heightBlocks = 19;
   let widhtBlocks = 25
   let widthScale = w / widhtBlocks;
+  let heightScale = h / heightBlocks;
 
   let frameRate: number = 15;
   let world = [];
 
   let actors: Actor[] = [];
 
-  let pacman; let ghost;
+  let pacmanl; let pacmanr; let pacmand; let pacmanu;
+  let ghost;
+
+  p5.preload = () => {
+    pacmanr = p5.loadImage('https://therealflamingo.tk/api/pacmanr')
+    pacmanl = p5.loadImage('https://therealflamingo.tk/api/pacmanl')
+    pacmanu = p5.loadImage('https://therealflamingo.tk/api/pacmanu')
+    pacmand = p5.loadImage('https://therealflamingo.tk/api/pacmand')
+    ghost = p5.loadImage('https://therealflamingo.tk/api/ghost');
+  }
 
   p5.setup = () => {
     p5.pixelDensity(1);
     p5.createCanvas(w, h);
-    pacman = p5.loadImage('https://images.discordapp.net/avatars/398127484983443468/0bc43684999726e69c2ca797200ffffc.png?size=512')
-    ghost = p5.loadImage('https://image.flaticon.com/icons/png/128/696/696498.png');
+
     p5.frameRate(frameRate);
     createWorld();
   };
@@ -172,7 +181,21 @@ new P5((p5: P5) => {
     for (let i: number = 0; i < actors.length; i++) {
       moveIfPossibleInDirection(actors[i]);
       if (actors[i].getType() == Pacman.name) {
-        p5.image(pacman, actors[i].getPos().x, actors[i].getPos().y, 1, 1);
+        switch (actors[i].getRotation()) {
+          case Direction.Down:
+          p5.image(pacmand, actors[i].getPos().x, actors[i].getPos().y, 1, 1);
+          break;
+          case Direction.Up:
+          p5.image(pacmanu, actors[i].getPos().x, actors[i].getPos().y, 1, 1);
+          break;
+          case Direction.Left:
+          p5.image(pacmanl, actors[i].getPos().x, actors[i].getPos().y, 1, 1);
+          break;
+          case Direction.Right:
+          p5.image(pacmanr, actors[i].getPos().x, actors[i].getPos().y, 1, 1);
+          break;
+        }
+        
       } else if(actors[i].getType() == Ghost.name) {
         p5.image(ghost, actors[i].getPos().x, actors[i].getPos().y, 1, 1);
       }
