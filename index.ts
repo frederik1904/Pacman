@@ -1,30 +1,65 @@
-import "./style.css";
 import P5 from "p5";
 //import WorldBlock from "./WorldBlock";
-import { Cheese } from './Actor/Cheese';
-import { Ghost } from './Actor/Ghost';
-import { Pacman } from './Actor/Pacman';
+import { Cheese } from './Cheese'
 import { Wall } from './Wall'
+import { Actor, Pacman, Ghost } from './Actor'
+
+enum Direction {
+    Up = 1,
+    Down,
+    Left,
+    Right,
+}
 
 class WorldBlock {
-  private cheese: Cheese; private ghost: Ghost; private pacman: Pacman; private wall: Wall;
+  constructor(private cheese: Cheese, private wall: Wall,
+    private p5: P5) {
+  }
 
-  constructor(cheese: Cheese, ghost: Ghost, pacman: Pacman, wall: Wall) {
-    this.cheese = cheese;
-    this.ghost = ghost;
-    this.pacman = pacman;
+  setWall(wall: Wall) {
     this.wall = wall;
   }
 
-  
+  createCheese() {
+    if (this.wall == null) {
+      this.cheese = new Cheese();
+    }
+  }
+
+  isMovable() {
+    return this.wall == null;
+  }
+
+  draw(x: number, y: number) {
+    if (this.wall != null) {
+      this.p5.noStroke();
+      this.p5.fill(0, 0, 0);
+      this.p5.rect(x, y,1,1);
+    }
+
+    if (this.cheese != null) {
+      this.p5.noStroke();
+      this.p5.fill(252, 190, 3);
+      this.p5.circle(x + 0.5, y + 0.5,
+        0.3, 0.3);
+    }
+  }
 }
 
 
 new P5((p5: P5) => {
-  let w: number = 400;
-  let h: number = 400;
+  let w: number = 800;
+  let h: number = 600;
+
+  let heightBlocks = 19;
+  let widhtBlocks = 25
+  let widthScale = w / widhtBlocks;
+
   let frameRate: number = 30;
   let world = [];
+
+  let player: Pacman;
+  let ai: Ghost[] = [];
 
   p5.setup = () => {
     p5.pixelDensity(1);
@@ -34,90 +69,107 @@ new P5((p5: P5) => {
   };
 
   function createWorld() {
-    for (let i: number = 0; i < 25; i++) {
-      world[i] = [];
-      for (let j: number = 0; j < 19; j++) {
-        if (i == 1 || j == 1) {
-          world[i][j] = new WorldBlock(null, null, null, new Wall());
-        } else {
-          world[i][j] = new WorldBlock(null, null, null, null);
+    for (let y: number = 0; y < heightBlocks; y++) {
+      world[y] = [];
+      for (let x: number = 0; x < widhtBlocks; x++) {
+        world[y][x] = new WorldBlock(null, null, p5);
+      }
+    }
+
+    createWalls();
+    createCheese();
+    createPacman();
+  }
+
+  function createWalls() {
+    let walls: number[][] = [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+      [1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ];
+
+    for (let y: number = 0; y < walls.length; y++) {
+      for (let x: number = 0; x < walls[y].length; x++) {
+        if (walls[y][x] == 1) {
+          world[y][x].setWall(new Wall());
         }
       }
     }
   }
 
-  // int[][] labyrinth = {
-  //               {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-  //               {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  //               {1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1},
-  //               {1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1},
-  //               {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  //               {1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1},
-  //               {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1},
-  //               {1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1},
-  //               {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  //               {1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1},
-  //               {1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1},
-  //               {1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1},
-  //               {1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1},
-  //               {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1},
-  //               {1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1},
-  //               {1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1},
-  //               {1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1},
-  //               {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  //               {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-  //           };
+  function createCheese() {
+    for (let y: number = 0; y < world.length; y++) {
+      for (let x: number = 0; x < world[y].length; x++) {
+        world[y][x].createCheese();
+      }
+    }
+  }
 
-  // function foodLocation() {
-  //   let x = p5.floor(p5.random(w));
-  //   let y = p5.floor(p5.random(h));
-  //   food = p5.createVector(x, y);
-  // }
+  function createPacman() {
+    player = new Pacman(p5.createVector(12,13));
+  }
 
-  // p5.keyPressed = () => {
-  //   switch (p5.keyCode) {
-  //     case p5.LEFT_ARROW: {
-  //       snake.setDir(-1, 0);
-  //       break;
-  //     }
-  //     case p5.RIGHT_ARROW: {
-  //       snake.setDir(1, 0);
-  //       break;
-  //     }
-  //     case p5.DOWN_ARROW: {
-  //       snake.setDir(0, 1);
-  //       break;
-  //     }
-  //     case p5.UP_ARROW: {
-  //       snake.setDir(0, -1);
-  //       break;
-  //     }
-  //   }
-  // };
+  function moveIfPossibleInDirection(actor: Actor, dir: Direction) {
+    let x: number = actor.getPos().x;
+    let y: number = actor.getPos().y;
+    switch (actor.keyPressed(p5)) {
+      case Direction.Down: {
+        if (world[y + 1][x].isMovable()) {
+          player.setPos(x, y + 1);
+        }
+        break;
+      }
+      case Direction.Left: {
+        if (world[y][x - 1].isMovable()) {
+          player.setPos(x - 1, y);
+        }
+        break;
+      }
+      case Direction.Right: {
+        if (world[y][x + 1].isMovable()) {
+          player.setPos(x + 1, y);
+        }
+        break;
+      }
+      case Direction.Up: {
+        if (world[y - 1][x].isMovable()) {
+          player.setPos(x, y - 1);
+        }
+        break;
+      }
+    }
+  }
 
   p5.draw = () => {
-    // p5.scale(rez);
+    p5.scale(widthScale);
     p5.background(220);
-    // for (let i: number = 0; i < 25; i++) {
-    //   for (let j: number = 0; j < 19; j++) {
-    //     console.log(world[i][j]);
-    //   }
-    // }
-    // if (snake.eat(food)) {
-    //   foodLocation();
-    // }
-    // snake.update();
-    // snake.show();
+    for (let y: number = 0; y < world.length; y++) {
+      for (let x: number = 0; x < world[y].length; x++) {
+        world[y][x].draw(x, y);
+      }
+    }
 
-    // if (snake.endGame()) {
-    //   p5.print("END GAME");
-    //   p5.background(255, 0, 0);
-    //   p5.noLoop();
-    // }
+    //Draw Pacman
+    p5.noStroke();
+    p5.fill(150);
+    p5.rect(player.getPos().x, player.getPos().y,1,1);
 
-    // p5.noStroke();
-    // p5.fill(255, 0, 0);
-    // p5.rect(food.x, food.y, 1, 1);
   };
 });
 
