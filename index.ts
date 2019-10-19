@@ -187,6 +187,10 @@ new P5((p5: P5) => {
     for (let i: number = 0; i < actors.length; i++) {
       if (actors[i].getType() != Pacman.name) {
         if (actors[i].removeOnTouch(null, actors)) {
+          p5.textSize(4);
+          p5.fill(255, 0,0);
+          p5.text("GAME OVER",0, 10);
+
           return true;
         };
       }
@@ -197,6 +201,11 @@ new P5((p5: P5) => {
       for (let x: number = 0; x < world[y].length; x++) {
         cheeseCount += world[y][x].hasCheese() ? 1 : 0;
       }
+    }
+    if (cheeseCount == 0) {
+      p5.textSize(4);
+          p5.fill(255, 0,0);
+          p5.text("YOU WON!",0, 10);
     }
     return cheeseCount == 0;
   }
