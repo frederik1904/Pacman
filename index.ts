@@ -2,7 +2,9 @@ import P5 from "p5";
 //import WorldBlock from "./WorldBlock";
 import { Cheese } from './Cheese'
 import { Wall } from './Wall'
-import { Actor, Pacman, Ghost } from './Actor'
+import { Actor } from './Actor'
+import Pacman from './Pacman'
+import { Ghost } from './Ghost'
 import { WorldBlock } from './WorldBlock'
 
 enum Direction {
@@ -23,8 +25,7 @@ new P5((p5: P5) => {
   let frameRate: number = 15;
   let world = [];
 
-  let player: Pacman;
-  let ai: Ghost[] = [];
+  let actors: Actor[] = [];
 
   p5.setup = () => {
     p5.pixelDensity(1);
@@ -88,15 +89,14 @@ new P5((p5: P5) => {
   }
 
   function createPacman() {
-    player = new Pacman(p5.createVector(12,13));
+    actors.push(new Pacman(p5.createVector(12,13)));
   }
 
   function createGhosts() {
-    ai = [ new Ghost(p5.createVector(1,1)), 
-           new Ghost(p5.createVector(22,1)),
-           new Ghost(p5.createVector(1,17)),
-           new Ghost(p5.createVector(22,17)) 
-        ]
+    actors.push(new Ghost(p5.createVector(1,1))) 
+    actors.push(new Ghost(p5.createVector(22,1)))
+    actors.push(new Ghost(p5.createVector(1,17)))
+    actors.push(new Ghost(p5.createVector(22,17)))
   }
 
   function moveIfPossibleInDirection(actor: Actor) {
@@ -130,10 +130,18 @@ new P5((p5: P5) => {
       }
     }
     actor.setPos(x, y);
-    actor.removeOnTouch(world[y][x]);
+    actor.removeOnTouch(world[y][x], actors);
   }
 
   function gameIsDone() {
+    for (let i: number = 0; i < actors.length; i++) {
+      if (actors[i].getType() != Pacman.name) {
+        if (actors[i].removeOnTouch(null, actors)) {
+          return true;
+        };
+      }
+    }
+
     let cheeseCount: number = 0;
     for (let y: number = 0; y < world.length; y++) {
       for (let x: number = 0; x < world[y].length; x++) {
@@ -152,23 +160,13 @@ new P5((p5: P5) => {
       }
     }
 
-    moveIfPossibleInDirection(player);
-
-    for (let i = 0; i < ai.length; i++) {
-      moveIfPossibleInDirection(ai[i]);
-    }
-
     //Draw ghosts
-    for (let i: number = 0; i < ai.length; i++) {
+    for (let i: number = 0; i < actors.length; i++) {
+      moveIfPossibleInDirection(actors[i]);
       p5.noStroke();
       p5.fill(150);
-      p5.rect(ai[i].getPos().x, ai[i].getPos().y,1,1);
+      p5.rect(actors[i].getPos().x, actors[i].getPos().y,1,1);
     }
-
-    //Draw Pacman
-    p5.noStroke();
-    p5.fill(150);
-    p5.rect(player.getPos().x, player.getPos().y,1,1);
 
     if (gameIsDone()) {
       p5.noLoop();
