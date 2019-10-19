@@ -27,7 +27,7 @@ class WorldBlock {
   }
 
   hasCheese() {
-    return this.cheese == null && this.wall == null;
+    return this.cheese != null && this.wall == null;
   }
 
   eatCheese() {
